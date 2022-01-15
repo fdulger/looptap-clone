@@ -1,0 +1,92 @@
+
+<body>
+<canvas id="gameBoard" width="400" height="600" style="border:1px solid black;"></canvas>
+<script>
+    let canvas = document.getElementById("gameBoard")
+    let ctx = canvas.getContext("2d")
+
+    let circleX = 200
+    let circleY = 300
+    let circleRadius = 100
+
+    let ballRadius = 20
+    let ballColor = '#0000CC'
+
+    let arcRadius = 100
+    let arcColor = '#A2BFF4'
+    let arcWidth = 40
+
+    let raf
+
+    let score = 0
+
+    let ball = {
+        theta: 0,
+        v: Math.PI / 50,
+        draw: function() {
+            let x = circleX + circleRadius * Math.cos(this.theta)
+            let y = circleY + circleRadius * Math.sin(this.theta)
+            ctx.beginPath()
+            ctx.arc(x, y, ballRadius, 0, Math.PI * 2, true)
+            ctx.closePath()
+            ctx.fillStyle = ballColor
+            ctx.fill()
+        }
+    }
+
+    let arc = {
+        coords: nextArc(),
+        draw: function() {
+            ctx.beginPath()
+            ctx.arc(circleX, circleY, arcRadius, this.coords.startAngle, this.coords.endAngle)
+            ctx.strokeStyle = arcColor
+            ctx.lineWidth = arcWidth
+            ctx.lineCap = "round"
+            ctx.stroke()
+        }
+    }
+
+    function nextArc() {
+        let start = random(0.8)
+        let length = random(0.4)
+        return {
+            startAngle: start * Math.PI * 2,
+            endAngle: Math.min(start + length, 1) * Math.PI * 2
+        }
+    }
+
+    function random(max) {
+        return Math.min(Math.random(), max)
+    }
+
+    function loop() {
+        ctx.clearRect(0,0, canvas.width, canvas.height)
+        arc.draw()
+        ball.draw()
+        ball.theta += ball.v
+        if (ball.theta > Math.PI * 2) {
+            ball.theta = 0
+        }
+        raf = window.requestAnimationFrame(loop)
+    }
+
+    canvas.addEventListener('click', function() {
+        if(ball.theta >= arc.coords.startAngle && ball.theta <= arc.coords.endAngle) {
+            arc.coords = nextArc()
+            score++
+        } else {
+            window.cancelAnimationFrame(raf)
+            ctx.font = "60px Verdana"
+            ctx.fillStyle = "red"
+            ctx.fillText("GAME OVER!", 10, 400);
+            ctx.font = "30px Verdana"
+            ctx.fillText("Your score: " + score, 70, 440)
+            ctx.font = "20px Verdana"
+            ctx.fillText("Click to replay...", 100, 470)
+            canvas.addEventListener('click', function () { window.location.reload() })
+        }
+    })
+    loop()
+</script>
+
+</body>
