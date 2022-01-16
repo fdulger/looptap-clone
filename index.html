@@ -1,18 +1,50 @@
 
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        #gameOver {
+          width: 100%;
+          height: 200px;
+          position: absolute;
+          top: 50%;
+          display: none;
+        }
+        .center {
+          margin: 0;
+          position: absolute;
+          left: 50%;
+          text-align: center;
+          font
+          -ms-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+          color: red;
+          font-family: Verdana;
+        }
+    </style>
+</head>
 <body>
-<canvas id="gameBoard" width="400" height="600" style="border:1px solid black;"></canvas>
+<canvas id="gameBoard"></canvas>
+<div id="gameOver">
+    <div class="center" onclick="reload()">
+        <div style="font-size: 50px;font-weight: bold;">GAME OVER!</div>
+        <div style="font-size: 30px;" id="score">Your score:</div>
+        <img src="play.png"/>
+        <div style="font-size: 20px;">Click to play again...</div>
+    </div>
+</div>
 <script>
     let canvas = document.getElementById("gameBoard")
+    canvas.width = document.body.clientWidth
+    canvas.height = document.body.clientHeight
     let ctx = canvas.getContext("2d")
 
-    let circleX = 200
-    let circleY = 300
-    let circleRadius = 100
+    let circleX = canvas.width / 2
+    let circleY = canvas.height / 2
+    let circleRadius = canvas.height / 4
 
     let ballRadius = 20
     let ballColor = '#0000CC'
 
-    let arcRadius = 100
     let arcColor = '#A2BFF4'
     let arcWidth = 40
 
@@ -38,7 +70,7 @@
         coords: nextArc(),
         draw: function() {
             ctx.beginPath()
-            ctx.arc(circleX, circleY, arcRadius, this.coords.startAngle, this.coords.endAngle)
+            ctx.arc(circleX, circleY, circleRadius, this.coords.startAngle, this.coords.endAngle)
             ctx.strokeStyle = arcColor
             ctx.lineWidth = arcWidth
             ctx.lineCap = "round"
@@ -70,22 +102,17 @@
         raf = window.requestAnimationFrame(loop)
     }
 
-    canvas.addEventListener('click', function() {
+    canvas.onmousedown = function() {
         if(ball.theta >= arc.coords.startAngle && ball.theta <= arc.coords.endAngle) {
             arc.coords = nextArc()
             score++
         } else {
             window.cancelAnimationFrame(raf)
-            ctx.font = "60px Verdana"
-            ctx.fillStyle = "red"
-            ctx.fillText("GAME OVER!", 10, 400);
-            ctx.font = "30px Verdana"
-            ctx.fillText("Your score: " + score, 70, 440)
-            ctx.font = "20px Verdana"
-            ctx.fillText("Click to replay...", 100, 470)
-            canvas.addEventListener('click', function () { window.location.reload() })
+            document.getElementById("gameOver").style.display = 'block'
+            document.getElementById("score").innerHTML = 'Your score: ' + score
         }
-    })
+    }
+    function reload() { window.location.reload(); }
     loop()
 </script>
 
