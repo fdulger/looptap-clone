@@ -52,14 +52,33 @@
     let circleRadius = canvas.height / 4
 
     let ballRadius = 20
-    let ballColor = "rgba(0, 0, 255, 0.7)"
-
-    let arcColor = '#A2BFF4'
-    let arcWidth = 40
+    let arcWidth = 50
 
     let twoPI = Math.PI * 2
-    let maxLength = Math.PI / 2
-    let minLength = Math.PI / 10
+
+    let easy = {
+        velocity: Math.PI / 75,
+        minLength: Math.PI / 4,
+        maxLength: Math.PI / 2,
+        ballColor: "rgba(26, 101, 26, 0.7)",
+        arcColor: "rgb(128, 255, 191)"
+    }
+    let medium =  {
+        velocity: Math.PI / 50,
+        minLength: Math.PI / 5,
+        maxLength: Math.PI / 3,
+        ballColor: "rgba(0, 61, 153, 0.7)",
+        arcColor: "rgb(153, 214, 255)"
+    }
+    let hard =  {
+        velocity: Math.PI / 40,
+        minLength: Math.PI / 10,
+        maxLength: Math.PI / 5,
+        ballColor: "rgba(128, 0, 0, 0.7)",
+        arcColor: "rgb(255, 153, 153)"
+    }
+
+    let level = easy
 
     let raf
 
@@ -68,14 +87,13 @@
 
     let ball = {
         theta: 0,
-        v: Math.PI / 50,
         draw: function() {
             let x = circleX + circleRadius * Math.cos(this.theta)
             let y = circleY + circleRadius * Math.sin(this.theta)
             ctx.beginPath()
-            ctx.arc(x, y, ballRadius, 0, Math.PI * 2, true)
+            ctx.arc(x, y, ballRadius, 0, twoPI, true)
             ctx.closePath()
-            ctx.fillStyle = ballColor
+            ctx.fillStyle = level.ballColor
             ctx.fill()
         }
     }
@@ -85,15 +103,16 @@
         draw: function() {
             ctx.beginPath()
             ctx.arc(circleX, circleY, circleRadius, this.coords.startAngle, this.coords.endAngle)
-            ctx.strokeStyle = arcColor
+            ctx.strokeStyle = level.arcColor
             ctx.lineWidth = arcWidth
             ctx.stroke()
         }
     }
 
     function nextArc() {
+        let level = getLevel()
         let start = random(0, twoPI)
-        let length = random(minLength, maxLength)
+        let length = random(level.minLength, level.maxLength)
         return {
             startAngle: start,
             endAngle: start + length
@@ -104,11 +123,18 @@
         return Math.random() * (max - min) + min
     }
 
+    function getLevel() {
+        if (score > 30) return hard
+        else if(score > 10) return medium
+        return easy
+    }
+
     function loop() {
         ctx.clearRect(0,0, canvas.width, canvas.height)
         arc.draw()
         ball.draw()
-        ball.theta += ball.v
+        let level = getLevel()
+        ball.theta += level.velocity
         if (ball.theta > Math.PI * 2) {
             ball.theta = 0
         }
@@ -123,6 +149,11 @@
                 score += 2
             } else {
                 score++
+            }
+            if (score>30) {
+                level = hard
+            } else if (score>10) {
+                level = medium
             }
             loopCount = 0
             document.getElementById("liveScore").innerHTML = score
