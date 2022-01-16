@@ -2,6 +2,10 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        body {
+          text-align: center;
+          font-family: Verdana;
+        }
         #gameOver {
           width: 100%;
           height: 200px;
@@ -13,16 +17,23 @@
           margin: 0;
           position: absolute;
           left: 50%;
-          text-align: center;
-          font
           -ms-transform: translate(-50%, -50%);
           transform: translate(-50%, -50%);
           color: red;
-          font-family: Verdana;
+        }
+        #liveScore {
+          width: 100%;
+          top: 50%;
+          position: absolute;
+          z-index: -1;
+          font-size: 6em;
+          -ms-transform: translate(0, -50%);
+          transform: translate(0, -50%);
         }
     </style>
 </head>
 <body>
+<div id="liveScore">0</div>
 <canvas id="gameBoard"></canvas>
 <div id="gameOver">
     <div class="center" onclick="reload()">
@@ -43,7 +54,7 @@
     let circleRadius = canvas.height / 4
 
     let ballRadius = 20
-    let ballColor = '#0000CC'
+    let ballColor = "rgba(0, 0, 255, 0.7)"
 
     let arcColor = '#A2BFF4'
     let arcWidth = 40
@@ -73,7 +84,7 @@
             ctx.arc(circleX, circleY, circleRadius, this.coords.startAngle, this.coords.endAngle)
             ctx.strokeStyle = arcColor
             ctx.lineWidth = arcWidth
-            ctx.lineCap = "round"
+<!--            ctx.lineCap = "round"-->
             ctx.stroke()
         }
     }
@@ -83,7 +94,7 @@
         let length = random(0.4)
         return {
             startAngle: start * Math.PI * 2,
-            endAngle: Math.min(start + length, 1) * Math.PI * 2
+            endAngle: (start + length) * Math.PI * 2
         }
     }
 
@@ -103,13 +114,31 @@
     }
 
     canvas.onmousedown = function() {
-        if(ball.theta >= arc.coords.startAngle && ball.theta <= arc.coords.endAngle) {
+
+        console.log("*********************************")
+        console.log("theta: " + ball.theta)
+        console.log("start: " + arc.coords.startAngle)
+        console.log("end: " + arc.coords.endAngle)
+        console.log("start mod: " + arc.coords.startAngle % (Math.PI * 2))
+        console.log("end mod: " + arc.coords.endAngle % (Math.PI * 2))
+
+        if(isInside(ball.theta, arc.coords.startAngle, arc.coords.endAngle)) {
             arc.coords = nextArc()
             score++
+            document.getElementById("liveScore").innerHTML = score
         } else {
             window.cancelAnimationFrame(raf)
+            document.getElementById("liveScore").style.display = 'none'
             document.getElementById("gameOver").style.display = 'block'
             document.getElementById("score").innerHTML = 'Your score: ' + score
+        }
+    }
+
+    function isInside(start, end, theta) {
+        if(end <= Math.PI * 2) {
+            return theta >= start || theta <= (end % (Math.PI * 2))
+        } else {
+            return theta >= start && theta <= end
         }
     }
     function reload() { window.location.reload(); }
