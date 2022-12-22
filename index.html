@@ -49,7 +49,7 @@
 
     let circleX = canvas.width / 2
     let circleY = canvas.height / 2
-    let circleRadius = canvas.height / 4
+    let circleRadius = Math.min(canvas.height / 4, canvas.width / 3)
 
     let ballRadius = 20
     let arcWidth = 50
@@ -57,7 +57,7 @@
     let twoPI = Math.PI * 2
 
     let easy = {
-        velocity: Math.PI / 75,
+        velocity: Math.PI / 60,
         minLength: Math.PI / 4,
         maxLength: Math.PI / 2,
         ballColor: "rgba(26, 101, 26, 0.7)",
@@ -77,11 +77,17 @@
         ballColor: "rgba(128, 0, 0, 0.7)",
         arcColor: "rgb(255, 153, 153)"
     }
+    let extraHard =  {
+        velocity: Math.PI / 30,
+        minLength: Math.PI / 10,
+        maxLength: Math.PI / 6,
+        ballColor: "rgba(200, 0, 0, 0.7)",
+        arcColor: "rgb(255, 50, 200)"
+    }
+
+    let animationFrame
 
     let level = easy
-
-    let raf
-
     let score = 0
     let loopCount = 0
 
@@ -110,7 +116,6 @@
     }
 
     function nextArc() {
-        let level = getLevel()
         let start = random(0, twoPI)
         let length = random(level.minLength, level.maxLength)
         return {
@@ -123,42 +128,30 @@
         return Math.random() * (max - min) + min
     }
 
-    function getLevel() {
-        if (score > 30) return hard
-        else if(score > 10) return medium
-        return easy
+    function popScore() {
+        score++
+        if (score == 5) level = medium
+        else if (score == 20) level = hard
+        else if (score == 30) level = extraHard
     }
 
     function loop() {
         ctx.clearRect(0,0, canvas.width, canvas.height)
         arc.draw()
         ball.draw()
-        let level = getLevel()
-        ball.theta += level.velocity
-        if (ball.theta > Math.PI * 2) {
-            ball.theta = 0
-        }
-        raf = window.requestAnimationFrame(loop)
+        ball.theta = (ball.theta + level.velocity) % twoPI
+        animationFrame = window.requestAnimationFrame(loop)
         loopCount++
     }
 
-    canvas.onmousedown = function() {
+    function keyDown() {
         if(isInside(ball.theta, arc.coords.startAngle, arc.coords.endAngle)) {
             arc.coords = nextArc()
-            if (loopCount < 40) {
-                score += 2
-            } else {
-                score++
-            }
-            if (score>30) {
-                level = hard
-            } else if (score>10) {
-                level = medium
-            }
+            popScore()
             loopCount = 0
             document.getElementById("liveScore").innerHTML = score
         } else {
-            window.cancelAnimationFrame(raf)
+            window.cancelAnimationFrame(animationFrame)
             document.getElementById("liveScore").style.display = 'none'
             document.getElementById("gameOver").style.display = 'block'
             if(!localStorage.highScore || localStorage.highScore < score) {
@@ -178,6 +171,10 @@
         }
     }
     function reload() { window.location.reload(); }
+
+    window.addEventListener('keydown', keyDown)
+    window.addEventListener('mousedown', keyDown)
+
     loop()
 </script>
 </div>
